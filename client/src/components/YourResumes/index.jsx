@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import "./index.css";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const YourResumes = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,8 +37,7 @@ const YourResumes = () => {
       const formData = new FormData();
       formData.append("resume", selectedFile);
 
-      // STEP 1: Upload resume
-      const uploadResponse = await fetch("http://localhost:5000/resume/upload", {
+      const uploadResponse = await fetch(`${API_BASE_URL}/resume/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -50,8 +52,7 @@ const YourResumes = () => {
 
       const uploadData = await uploadResponse.json();
 
-      // STEP 2: Analyze resume
-      const analyzeResponse = await fetch("http://localhost:5000/resume/analyze", {
+      const analyzeResponse = await fetch(`${API_BASE_URL}/resume/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,9 +72,6 @@ const YourResumes = () => {
 
       const analyzeData = await analyzeResponse.json();
 
-      // IMPORTANT:
-      // Backend returns { success: true, analysis: {...} }
-      // So store analyzeData.analysis, not analyzeData
       setAnalysisResult(analyzeData.analysis);
       setShowModal(true);
     } catch (err) {
