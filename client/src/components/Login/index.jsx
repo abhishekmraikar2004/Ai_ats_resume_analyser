@@ -1,6 +1,6 @@
-// Write your code here
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 import "./index.css";
 
 const Login = () => {
@@ -8,6 +8,7 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,39 +21,70 @@ const Login = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setLoading(true)
-    setError("")
-    const url = "http://localhost:5000/auth/login";
+    event.preventDefault();
+
+    setLoading(true);
+    setError("");
+
+    // IMPORTANT FIX
+    const url = `${API_BASE_URL}/auth/login`;
+
     const userDetails = {
       email,
-      password
-    }
+      password,
+    };
 
     const options = {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(userDetails)
-    }
-    const response = await fetch(url, options)
-    const data = await response.json()
+      body: JSON.stringify(userDetails),
+    };
 
-    if (response.ok) {
-      localStorage.setItem("token", data.token);
-      navigate("/");
-    } else {
-      setError(data.message || "Login failed");
+    try {
+      const response = await fetch(url, options);
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = {
+          message:
+            response.statusText || "No JSON response",
+        };
+      }
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+
+        navigate("/");
+      } else {
+        setError(
+          data.message || "Login failed"
+        );
+      }
+    } catch (err) {
+      setError(
+        err.message || "Network error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="auth-container">
-      <form className="auth-card" onSubmit={handleSubmit}>
+      <form
+        className="auth-card"
+        onSubmit={handleSubmit}
+      >
         <h2>Login</h2>
 
-        {error && <p className="error-text">{error}</p>}
+        {error && (
+          <p className="error-text">{error}</p>
+        )}
 
         <input
           type="email"
@@ -72,12 +104,20 @@ const Login = () => {
           required
         />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+        <button
+          type="submit"
+          disabled={loading}
+        >
+          {loading
+            ? "Logging in..."
+            : "Login"}
         </button>
 
         <p>
-          Don't have an account? <Link to="/register">Register</Link>
+          Don't have an account?{" "}
+          <Link to="/register">
+            Register
+          </Link>
         </p>
       </form>
     </div>
