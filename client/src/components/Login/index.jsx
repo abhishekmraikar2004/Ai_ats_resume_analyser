@@ -1,74 +1,52 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { API_BASE_URL } from "../../config";
 import "./index.css";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const Login = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleEmail = (event) => {
-    setEmail(event.target.value);
-  };
-
-  const handlePassword = (event) => {
-    setPassword(event.target.value);
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     setLoading(true);
     setError("");
 
-    // IMPORTANT FIX
-    const url = `${API_BASE_URL}/auth/login`;
-
-    const userDetails = {
-      email,
-      password,
-    };
-
-    const options = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userDetails),
-    };
-
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-      let data;
-
+      let data = {};
       try {
         data = await response.json();
-      } catch (e) {
-        data = {
-          message:
-            response.statusText || "No JSON response",
-        };
+      } catch {
+        data = {};
       }
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
-
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
         navigate("/");
       } else {
-        setError(
-          data.message || "Login failed"
-        );
+        setError(data.message || data.error || "Login failed");
       }
     } catch (err) {
-      setError(
-        err.message || "Network error"
-      );
+      setError(err.message || "Network error");
     } finally {
       setLoading(false);
     }
@@ -76,22 +54,17 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <form
-        className="auth-card"
-        onSubmit={handleSubmit}
-      >
+      <form className="auth-card" onSubmit={handleSubmit}>
         <h2>Login</h2>
 
-        {error && (
-          <p className="error-text">{error}</p>
-        )}
+        {error && <p className="error-text">{error}</p>}
 
         <input
           type="email"
           name="email"
           placeholder="Email"
           value={email}
-          onChange={handleEmail}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
 
@@ -100,24 +73,16 @@ const Login = () => {
           name="password"
           placeholder="Password"
           value={password}
-          onChange={handlePassword}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? "Logging in..."
-            : "Login"}
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <p>
-          Don't have an account?{" "}
-          <Link to="/register">
-            Register
-          </Link>
+          Don't have an account? <Link to="/register">Register</Link>
         </p>
       </form>
     </div>
