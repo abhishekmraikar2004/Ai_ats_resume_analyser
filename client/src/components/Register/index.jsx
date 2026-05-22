@@ -1,6 +1,6 @@
-// Write your code here
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 import "./index.css";
 
 const Register = () => {
@@ -12,64 +12,93 @@ const Register = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
-      const handleNameChange = (event) => {
+  const [success, setSuccess] = useState("");
+
+  const handleNameChange = (event) => {
     setName(event.target.value);
   };
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
-  }
+  };
 
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
-  }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setLoading(true);
     setError("");
     setSuccess("");
 
-    const url = "http://localhost:5000/auth/register";
-    const userDetails = { name, email, password }
+    // IMPORTANT FIX
+    const url = `${API_BASE_URL}/auth/register`;
+
+    const userDetails = {
+      name,
+      email,
+      password,
+    };
 
     const options = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(userDetails),
-    }
+    };
 
     try {
-      const response = await fetch(url, options)
-      let data
+      const response = await fetch(url, options);
+
+      let data;
+
       try {
-        data = await response.json()
+        data = await response.json();
       } catch (e) {
-        data = { message: response.statusText || "No JSON response" }
+        data = {
+          message:
+            response.statusText || "No JSON response",
+        };
       }
 
       if (response.ok) {
         setSuccess("Registration successful!");
+
         setTimeout(() => {
           navigate("/login");
         }, 2000);
       } else {
-        setError(data.error || data.message || "Registration failed");
+        setError(
+          data.error ||
+            data.message ||
+            "Registration failed"
+        );
       }
     } catch (err) {
       setError(err.message || "Network error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
-    return (
+
+  return (
     <div className="auth-container">
-      <form className="auth-card" onSubmit={handleSubmit}>
+      <form
+        className="auth-card"
+        onSubmit={handleSubmit}
+      >
         <h2>Register</h2>
 
-        {error && <p className="error-text">{error}</p>}
-        {success && <p className="success-text">{success}</p>}
+        {error && (
+          <p className="error-text">{error}</p>
+        )}
+
+        {success && (
+          <p className="success-text">{success}</p>
+        )}
 
         <input
           type="text"
@@ -98,12 +127,18 @@ const Register = () => {
           required
         />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
+        <button
+          type="submit"
+          disabled={loading}
+        >
+          {loading
+            ? "Registering..."
+            : "Register"}
         </button>
 
         <p>
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
         </p>
       </form>
     </div>
