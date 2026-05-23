@@ -105,6 +105,7 @@ Requirements:
         );
       }
 
+      // Handles both { success: true, analysis: {...} } and direct analysis object
       const result = analyzeData.analysis || analyzeData;
       setAnalysisResult(result);
       setShowModal(true);
