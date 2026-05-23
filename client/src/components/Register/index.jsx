@@ -18,24 +18,29 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setLoading(true);
     setError("");
     setSuccess("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      );
 
       let data = {};
+
       try {
         data = await response.json();
       } catch {
@@ -44,11 +49,16 @@ const Register = () => {
 
       if (response.ok) {
         setSuccess("Registration successful!");
+
         setTimeout(() => {
           navigate("/login");
         }, 2000);
       } else {
-        setError(data.message || data.error || "Registration failed");
+        setError(
+          data.message ||
+            data.error ||
+            "Registration failed"
+        );
       }
     } catch (err) {
       setError(err.message || "Network error");
@@ -59,18 +69,28 @@ const Register = () => {
 
   return (
     <div className="auth-container">
-      <form className="auth-card" onSubmit={handleSubmit}>
+      <form
+        className="auth-card"
+        onSubmit={handleSubmit}
+      >
         <h2>Register</h2>
 
-        {error && <p className="error-text">{error}</p>}
-        {success && <p className="success-text">{success}</p>}
+        {error && (
+          <p className="error-text">{error}</p>
+        )}
+
+        {success && (
+          <p className="success-text">{success}</p>
+        )}
 
         <input
           type="text"
           name="name"
           placeholder="Full Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) =>
+            setName(e.target.value)
+          }
           required
         />
 
@@ -79,7 +99,9 @@ const Register = () => {
           name="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
           required
         />
 
@@ -88,16 +110,24 @@ const Register = () => {
           name="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
           required
         />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
+        <button
+          type="submit"
+          disabled={loading}
+        >
+          {loading
+            ? "Registering..."
+            : "Register"}
         </button>
 
         <p>
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
         </p>
       </form>
     </div>
