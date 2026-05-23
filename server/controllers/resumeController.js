@@ -31,7 +31,6 @@ export const uploadResume = async (req, res) => {
     });
   } catch (err) {
     console.error("UPLOAD RESUME ERROR:", err);
-
     return res.status(500).json({
       success: false,
       error: err.message || "Failed to upload resume",
@@ -45,9 +44,6 @@ export const analyzeResume = async (req, res) => {
 
     const { resumeText, jobDescription } = req.body;
 
-    console.log("RESUME TEXT:", resumeText?.substring(0, 200));
-    console.log("JOB DESCRIPTION:", jobDescription?.substring(0, 200));
-
     if (!resumeText || !jobDescription) {
       return res.status(400).json({
         success: false,
@@ -57,17 +53,7 @@ export const analyzeResume = async (req, res) => {
 
     const analysis = await analyzeWithGemini(resumeText, jobDescription);
 
-    console.log(
-      "FINAL ANALYSIS RESPONSE:",
-      JSON.stringify(analysis, null, 2)
-    );
-
-    if (!analysis) {
-      return res.status(500).json({
-        success: false,
-        message: "No analysis returned from Gemini",
-      });
-    }
+    console.log("FINAL ANALYSIS RESPONSE:", JSON.stringify(analysis, null, 2));
 
     return res.status(200).json({
       success: true,
