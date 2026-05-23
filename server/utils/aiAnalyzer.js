@@ -41,25 +41,21 @@ ${jobDescription}
 `;
 
 const extractJsonFromText = (text) => {
-  if (!text) throw new Error("Empty response text from Gemini");
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    const firstBrace = text.indexOf("{");
-    const lastBrace = text.lastIndexOf("}");
-
-    if (firstBrace === -1 || lastBrace === -1) {
-      throw new Error("Gemini response is not valid JSON");
-    }
-
-    return JSON.parse(text.slice(firstBrace, lastBrace + 1));
+  if (!text) {
+    throw new Error("Gemini returned empty response");
   }
+
+  const cleaned = text
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  return JSON.parse(cleaned);
 };
 
 export const analyzeWithGemini = async (resumeText, jobDescription) => {
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is undefined");
+    throw new Error("GEMINI_API_KEY is missing in Render environment variables");
   }
 
   const response = await fetch(
@@ -68,22 +64,22 @@ export const analyzeWithGemini = async (resumeText, jobDescription) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY
+        "x-goog-api-key": process.env.GEMINI_API_KEY,
       },
       body: JSON.stringify({
         contents: [
           {
             parts: [
               {
-                text: buildPrompt(resumeText, jobDescription)
-              }
-            ]
-          }
+                text: buildPrompt(resumeText, jobDescription),
+              },
+            ],
+          },
         ],
         generationConfig: {
-          temperature: 0.2
-        }
-      })
+          temperature: 0.2,
+        },
+      }),
     }
   );
 
@@ -91,7 +87,9 @@ export const analyzeWithGemini = async (resumeText, jobDescription) => {
 
   if (!response.ok) {
     console.error("Gemini API Error:", data);
-    throw new Error(data?.error?.message || "Gemini API request failed");
+    throw new Error(
+      data?.error?.message || "Gemini API request failed"
+    );
   }
 
   const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -100,5 +98,10 @@ export const analyzeWithGemini = async (resumeText, jobDescription) => {
     throw new Error("No text returned from Gemini");
   }
 
-  return extractJsonFromText(rawText);
+  try {
+    return extractJsonFromText(rawText);
+  } catch (err) {
+    console.error("RAW GEMINI TEXT:", rawText);
+    throw new Error("Gemini returned invalid JSON");
+  }
 };
